@@ -1,0 +1,13 @@
+*__pycache__/
+
+*.db
+
+*.txt
+
+*.png
+
+*.jpg
+
+*.sql
+
+*.json
