@@ -23,12 +23,13 @@ def adicionar_movimentacao(new_movimentacao_info: Dict) -> Dict:
 
 # apagar registro
 def apagar_movimentacao(idMov: int) -> Dict:
-    """
-    # Função que apaga um registro do bd
+    """Função que apaga um registro do bd
     ...
 
     Parametros
+
     ----------
+
     :param idMov: 
         o ID da movimentação a ser deletada
     :type:  
@@ -51,16 +52,49 @@ def apagar_movimentacao(idMov: int) -> Dict:
 
         response = "registro deletado com sucesso."
         return { 'success': True, 'message': response}
-    except Exception as error:
+    except Error as error:
         return { 'success': False, 'error': error}
 
 def pegar_movimentacoes():
+    """
+    # Função que pega os registros do bd
+    ...
+
+    Parametros
+    ----------
+    :return: 
+        Uma lista de tuplas:
+            [(), (), ()]
+    """
 
     conn = conectar_database()
     cur = conn.cursor()
     query = "SELECT * FROM view_movimentacoes"
     cur.execute(query)
     res = cur.fetchall()
+    conn.close()
+
+    return res
+
+def pegar_caixa_inicial():
+    """
+    # Função que pega o valor do caixa inicial
+    ...
+
+    Parametros
+    ----------
+    :return: 
+        Uma Scalar em uma tupla:
+            ()
+        Ou:
+            None
+    """
+
+    conn = conectar_database()
+    cur = conn.cursor()
+    query = "SELECT CAIXA_INICIAL_num FROM TAB_CAIXA_INICIAL"
+    cur.execute(query)
+    res = cur.fetchone()
     conn.close()
 
     return res
@@ -90,13 +124,15 @@ def __valida_movimentacao(new_movimentacao_info: Dict) -> Dict:
     try:
         valor = str(new_movimentacao_info['valor']).replace(',', '.')
         float(valor)
-        if valor < 0:
-            erro = 'O campo "valor" precisa ser maior que 0 (zero)!'
-            return { 'valido': False, 'erro': Exception(erro) }
     except: 
         erro = 'O campo "valor" precisa ser numérico!'
         return {'valido': False, 'erro': Exception(erro) }
     
+    valor = float(str(new_movimentacao_info['valor']).replace(',', '.'))
+    if valor < 0:
+        erro = 'O campo "valor" precisa ser maior que 0 (zero)!'
+        return { 'valido': False, 'erro': Exception(erro) }
+
     try:
         dt.strptime(new_movimentacao_info['data'], "%d-%m-%Y")
     except:

@@ -1,7 +1,7 @@
 from PySimpleGUI import PySimpleGUI as sg
 from datetime import datetime as dt
 from src.controllers.categoria_register_controller import pegar_categorias
-from src.controllers.movimentacao_register_controller import pegar_movimentacoes
+from src.controllers.movimentacao_register_controller import pegar_movimentacoes, pegar_caixa_inicial
 
 # Layout
 sg.theme('Reddit')
@@ -44,11 +44,8 @@ def tela_adicionar_movimentacao():
     # COLUNA LAYOUT
     bntADCMovimentacao = sg.Button(button_text='Adicionar Movimentação', key='-ADC_MOVIMENTACAO_BTN-', button_color='green')
     bntApagarMovimentacao = sg.Button(button_text='Apagar Movimentação', key='-DEL_MOVIMENTACAO_BTN-', button_color='red', size=(18, ))
-    bntEditarMovimentacao = sg.Button(button_text='Editar Movimentação', key='-EDIT_MOVIMENTACAO_BTN-', size=(18, ))
-    bntSalvarMovimentacao = sg.Button(button_text='Salvar Alterações', key='-SAVE_MOVIMENTACAO_BTN-', disabled=True, size=(13, ))
     column_layout = [
-        [bntADCMovimentacao], 
-        [bntEditarMovimentacao, bntSalvarMovimentacao],
+        [bntADCMovimentacao],
         [bntApagarMovimentacao]
     ]
 
@@ -58,14 +55,35 @@ def tela_adicionar_movimentacao():
                                 col_widths=[5, 10, 8, 12, 15, 6, 5], auto_size_columns=False,
                                 num_rows=15, alternating_row_color='#99dbf9',
                                 enable_click_events=True)
+    
+    cx_inicial = pegar_caixa_inicial()
+    op_cx_inicial = None
+    txt_cx_inicial = None
+    
+    # CAIXA INICIAL
+    if cx_inicial == None:
+        op_cx_inicial = sg.Input('', size=(10, ),
+                             tooltip=" insira o valor do caixa inicial: ",
+                             visible=True)
+        txt_cx_inicial = sg.Text(str(cx_inicial), size=(10, 2) ,
+                                 background_color='#7aafc7',
+                                 visible=False)
+    else:
+        txt_cx_inicial = sg.Text(str(cx_inicial[0]), size=(10, 2),
+                                 background_color='#7aafc7',
+                                 visible=True)
+        op_cx_inicial = sg.Input('', size=(10, ),
+                             tooltip=" insira o valor do caixa inicial: ",
+                             visible=False)
+        # mostrar output com o valor
+
     layout = [
-        [sg.Text('Caixa Inical:'), sg.Output()], 
+        [sg.Text('Caixa Inical:'), op_cx_inicial, txt_cx_inicial], 
         [tabMovimentacoes],
-        [ sg.Frame('Adicionar Movimentações', frame_layout), sg.Column(column_layout, element_justification='l')], 
-        
+        [ sg.Frame('Adicionar Movimentações', frame_layout), sg.Column(column_layout, element_justification='l')],
     ]
 
-    return sg.Window("Movimentações", layout=layout, finalize=True,)
+    return sg.Window("Movimentações", layout=layout, finalize=True, size=(700, 500))
 
 def main() -> None:
     # CRIANDO A JANELA

@@ -1,16 +1,16 @@
 from time import sleep
 from pprint import pprint
 import PySimpleGUI as sg
-from src.views.movimentacao_register_view import tela_adicionar_movimentacao, atualizar_combo, atualizar_table_mov
-from src.views.categoria_register_view import tela_adicionar_categoria, atualizar_table
-from src.controllers.movimentacao_register_controller import adicionar_movimentacao
-from src.controllers.categoria_register_controller import * 
+from src.views import movimentacao_register_view as MovView
+from src.views import categoria_register_view as CatView
+from src.controllers import movimentacao_register_controller as MovController
+from src.controllers import categoria_register_controller as CatController
 
 def start() -> None:
     sg.set_options(suppress_raise_key_errors=False, suppress_error_popups=False, suppress_key_guessing=False)
 
     # Cria as janelas iniciais
-    jan_adicionar_movimentacao, jan_adicionar_categoria = tela_adicionar_movimentacao(), None
+    jan_adicionar_movimentacao, jan_adicionar_categoria = MovView.tela_adicionar_movimentacao(), None
     linha = None # vai guardar a linha quando for deletar|editar um registro
     categoria_updt_info = {} # vai guardar as infos do registro a ser editado   
 
@@ -22,7 +22,7 @@ def start() -> None:
             break        
         
         elif window == jan_adicionar_movimentacao and event in ('-TIPO_ENT-', '-TIPO_SAI-'):
-            atualizar_combo(values, window)
+            MovView.atualizar_combo(values, window)
 
         elif window == jan_adicionar_movimentacao and event == '-ADC_MOVIMENTACAO_BTN-':
             # aplicar o controller
@@ -44,16 +44,14 @@ def start() -> None:
             }
 
             # aplicar controller
-            response = adicionar_movimentacao(new_movimentacao_info)
+            response = MovController.adicionar_movimentacao(new_movimentacao_info)
             if response['success']:
-                sg.popup("""Movimentação adicionada com sucesso.""",
-                          title='Sucesso')
+                sg.popup("""Movimentação adicionada com sucesso.""", title='Sucesso')
+                # atualizar tabela
+                sleep(1)
+                MovView.atualizar_table_mov(window)
             else:
                 sg.popup_error(f"Erro: {response['error']['erro']}", title='Erro de preenchimento')
-            
-            # atualizar tabela
-            sleep(1)
-            atualizar_table_mov(window)
 
         elif window == jan_adicionar_movimentacao and event == '-CALENDAR_BTN-':
             data = sg.popup_get_date()
@@ -66,16 +64,24 @@ def start() -> None:
             linha = event[2][0]
             
         elif window == jan_adicionar_movimentacao and event == '-DEL_MOVIMENTACAO_BTN-':
-            msg = f"""
-            evento: {str(event)}
-            linha: {str(linha+1)}
-            """
-            sg.popup(msg, title='')
-       
+            if linha == None:
+                sg.popup("Nenhum registro selecionado", title='')
+            else:
+                if sg.popup_ok_cancel('Esta ação não pode ser desfeita, continuar?', title='Alerta') == 'OK':
+                    # aplicar o controlador
+                    all_movimentacoes = MovController.pegar_movimentacoes()
+                    idMov = all_movimentacoes[linha][0]
+                    MovController.apagar_movimentacao(idMov)
+                    linha = None
+
+                    # atualizar tabela
+                    sleep(1)
+                    MovView.atualizar_table_mov(window)
+
         # ========================= JANELA CATEGORIA =========================
         # abre a janela de categoria
         elif window == jan_adicionar_movimentacao and event == '-CAT_BTN-':
-            jan_adicionar_categoria = tela_adicionar_categoria()
+            jan_adicionar_categoria = CatView.tela_adicionar_categoria()
             jan_adicionar_movimentacao.hide()
 
         # adiciona nova categoria
@@ -90,7 +96,7 @@ def start() -> None:
             }
 
             # aplicar o controller
-            response = adicionar_categoria(new_categoria_info)
+            response = CatController.adicionar_categoria(new_categoria_info)
             if response['success']:
                 sg.popup(f"""Categoria *{response['message']['atributos']['categoria']}* registrada com sucesso.""",
                           title='Sucesso')
@@ -99,7 +105,7 @@ def start() -> None:
             
             # atualizar tabela
             sleep(1)
-            atualizar_table(window)
+            CatView.atualizar_table(window)
 
         # fecha a janela de categoria e volta para movimentação
         elif window == jan_adicionar_categoria and event in ('-RETORNAR-', sg.WIN_CLOSED):
@@ -117,18 +123,18 @@ def start() -> None:
             else:
                 if sg.popup_ok_cancel('Esta ação não pode ser desfeita, continuar?', title='Alerta') == 'OK':
                     # aplicar o controlador
-                    categorias = pegar_categorias()
+                    categorias = CatController.pegar_categorias()
                     delCat = categorias['tuplas'][linha][1]
-                    apagar_categoria(delCat)
+                    CatController.apagar_categoria(delCat)
                     linha = None
 
                     # atualizar tabela
                     sleep(1)
-                    atualizar_table(window)
+                    CatView.atualizar_table(window)
 
         # edita o registro
         elif window == jan_adicionar_categoria and event == '-SALVAR_BTN-':
-            categorias = pegar_categorias()
+            categorias = CatController.pegar_categorias()
             catAtual = categorias['tuplas'][linha][0]
 
             novoTipo = None
@@ -144,26 +150,26 @@ def start() -> None:
             }
 
             #aplicar controller
-            response = editar_categoria(categoria_updt_info)
+            response = CatController.editar_categoria(categoria_updt_info)
             if response['success']:
                 message = f"""Categoria {catAtual} aterada para > *{response['message']['atributos']['updtCategoria']}* com sucesso.
                 """
                 sg.popup(message, title='Sucesso')
+                 # atualizar tabela
+                sleep(1)
+                CatView.atualizar_table(window)
             else:
                 sg.popup_error(f"Erro: {response['error']['erro']}", title='Erro de preenchimento')
+            
             linha = None
             window['-SALVAR_BTN-'].update(disabled=True)
-
-            # atualizar tabela
-            sleep(1)
-            atualizar_table(window)
 
         # altera o registro
         elif window == jan_adicionar_categoria and event == '-EDITAR_BTN-':
             if linha == None:
                 sg.popup("Nenhum registro selecionado", title='')
             else:
-                categorias = pegar_categorias()
+                categorias = CatController.pegar_categorias()
                 id, catAtual, tipoAtual = categorias['tuplas'][linha]
 
                 window['-CAT_INPUT-'].update(catAtual)
@@ -173,17 +179,5 @@ def start() -> None:
 
 if __name__ == '__main__':
     start()
-    # cats = pegar_categorias()
-    # # cats = list(map(lambda c: (c[1], c[2]), cats['tuplas']))
-    # cat = 'SALÁRIO'
-    # cat = [c[0] for c in cats['tuplas'] if c[1] == cat]
-    # pprint(cats['tuplas'])
-    # print(f'id: {cat[0]}')
-    # novaCat = {
-    #     'categoria': '',
-    #     'tipo': 1
-    # }
-    # adicionar_categoria(novaCat)
-
-    # movs = pegar_movimentacoes()
-    # print(movs)
+    # cxInicial = MovController.pegar_caixa_inicial()
+    # print(cxInicial)
