@@ -21,6 +21,17 @@ def start() -> None:
         if window == jan_adicionar_movimentacao and event == sg.WIN_CLOSED:
             break        
         
+        # SALVAR CAIXA INICIAL
+        elif window == jan_adicionar_movimentacao and event == '-BTN_CAIXA_INICIAL-':
+            valor_cx_inicial = values['-INP_CAIXA_INICIAL-']
+            response = MovController.salvar_caixa_inicial(valor_cx_inicial)
+            if response['success'] == False:
+                sg.popup_error(response['error']['erro'], title='')
+            else:
+                window['-TXT_CX_INICIAL-'].update(visible=True)
+                MovView.atualizar_cx_inicial(window)
+
+        
         elif window == jan_adicionar_movimentacao and event in ('-TIPO_ENT-', '-TIPO_SAI-'):
             MovView.atualizar_combo(values, window)
 
@@ -180,4 +191,4 @@ def start() -> None:
 if __name__ == '__main__':
     start()
     # cxInicial = MovController.pegar_caixa_inicial()
-    # print(cxInicial)
+    # print(type(cxInicial))

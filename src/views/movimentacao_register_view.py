@@ -17,6 +17,11 @@ def atualizar_table_mov(window):
     movimentacoes = pegar_movimentacoes()
     window['-TAB_MOV-'].update(values=movimentacoes)
 
+def atualizar_cx_inicial(window):
+    caixa_inicial = pegar_caixa_inicial()
+    valor_formatado = f"R$ {caixa_inicial[0]:_.2f}".replace('.', ',')
+    window['-TXT_CX_INICIAL-'].update(value=valor_formatado.replace('_', '.'))
+
 def tela_adicionar_movimentacao():
     movimentacoes = pegar_movimentacoes()
     hoje = dt.strftime(dt.today(), "%d-%m-%Y")
@@ -57,28 +62,40 @@ def tela_adicionar_movimentacao():
                                 enable_click_events=True)
     
     cx_inicial = pegar_caixa_inicial()
-    op_cx_inicial = None
-    txt_cx_inicial = None
+    inp_cx_inicial = None
+    txt_cx_incial = None
+    btnSalvarCXInicial = sg.Button("Salvar", key='-BTN_CAIXA_INICIAL-')
     
     # CAIXA INICIAL
     if cx_inicial == None:
-        op_cx_inicial = sg.Input('', size=(10, ),
-                             tooltip=" insira o valor do caixa inicial: ",
-                             visible=True)
-        txt_cx_inicial = sg.Text(str(cx_inicial), size=(10, 2) ,
-                                 background_color='#7aafc7',
-                                 visible=False)
+        inp_cx_inicial = sg.Input(size=(8, ), focus=False,
+                                  do_not_clear=False,
+                                  tooltip=" Insira um valor... ",
+                                  key='-INP_CAIXA_INICIAL-')
+        txt_cx_incial = sg.Text(key='-TXT_CX_INICIAL-', visible=False,
+                                size=(12, ),
+                                font=('Arial bold', 16),
+                                justification='center',
+                                background_color='#84fe8f',
+                                text_color='#0e2f44',)
     else:
-        txt_cx_inicial = sg.Text(str(cx_inicial[0]), size=(10, 2),
-                                 background_color='#7aafc7',
-                                 visible=True)
-        op_cx_inicial = sg.Input('', size=(10, ),
-                             tooltip=" insira o valor do caixa inicial: ",
-                             visible=False)
-        # mostrar output com o valor
+        inp_cx_inicial = sg.Input(size=(8, ), focus=False,                           
+                                  do_not_clear=False,
+                                  tooltip=" Insira um valor... ",
+                                  key='-INP_CAIXA_INICIAL-')
+        
+        valor_formatado = f"R$ {cx_inicial[0]:_.2f}".replace('.', ',')
+        txt_cx_incial = sg.Text(valor_formatado.replace('_', '.'),
+                                size=(12, ),
+                                font=('Arial bold', 16),
+                                justification='center',
+                                background_color='#84fe8f',
+                                text_color='#0e2f44',
+                                key='-TXT_CX_INICIAL-', 
+                                visible=True)
 
     layout = [
-        [sg.Text('Caixa Inical:'), op_cx_inicial, txt_cx_inicial], 
+        [sg.Text('Caixa Inical:'), inp_cx_inicial, btnSalvarCXInicial, txt_cx_incial], 
         [tabMovimentacoes],
         [ sg.Frame('Adicionar Movimentações', frame_layout), sg.Column(column_layout, element_justification='l')],
     ]

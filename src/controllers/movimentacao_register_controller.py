@@ -99,6 +99,34 @@ def pegar_caixa_inicial():
 
     return res
 
+def salvar_caixa_inicial(valor) -> Dict:
+    try:
+        validacao = __valida_caixa_inicial(valor)
+        if validacao['valido'] == False:
+            return { 'success': False, 'error': validacao}
+        
+        valor = float(str(valor).replace(',', '.'))
+        cx_inicial = pegar_caixa_inicial()
+        conn = conectar_database()
+        cur = conn.cursor()
+
+        if cx_inicial == None:
+            cur.execute("""
+            INSERT INTO TAB_CAIXA_INICIAL ( CAIXA_INICIAL_num ) 
+            VALUES (?)""", (valor, ))
+            conn.commit()
+            conn.close()
+            return { 'success': True}
+        else:
+            cur.execute(f"""UPDATE TAB_CAIXA_INICIAL
+                            SET CAIXA_INICIAL_num = {valor}""")
+            conn.commit()
+            conn.close()
+            return { 'success': True}
+        
+    except Error as error:
+        return { 'success': False, 'error': error}
+
 #2 - validar entradas
 def __valida_movimentacao(new_movimentacao_info: Dict) -> Dict:
     if new_movimentacao_info['data'] == '':
@@ -185,3 +213,22 @@ def __formatar_resposta(new_movimentacao_info: Dict) -> Dict:
         'type': 'Movimentação',
         'atributos': new_movimentacao_info
     }
+
+def __valida_caixa_inicial(valor) -> Dict:
+    if valor == '': # verifica se está vazio
+        erro = 'O campo "caixa inicial" não pode estar vazio!'
+        return {'valido': False, 'erro': Exception(erro)} #retorna
+       
+    try:
+        valor = str(valor).replace(',', '.')
+        float(valor)
+    except: 
+        erro = 'O campo "valor" precisa ser numérico!'
+        return {'valido': False, 'erro': Exception(erro) }
+    
+    valor = float(str(valor).replace(',', '.'))
+    if valor < 0:
+        erro = 'O campo "valor" precisa ser maior que 0 (zero)!'
+        return { 'valido': False, 'erro': Exception(erro) }
+    
+    return {'valido': True}
