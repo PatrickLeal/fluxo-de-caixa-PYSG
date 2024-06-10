@@ -23,9 +23,8 @@ def atualizar_cx_inicial(window):
     window['-TXT_CX_INICIAL-'].update(value=valor_formatado.replace('_', '.'))
 
 def tela_adicionar_movimentacao():
-    movimentacoes = pegar_movimentacoes()
     hoje = dt.strftime(dt.today(), "%d-%m-%Y")
-    headings = ['ID', 'DATA', 'TIPO', 'CATEGORIA', 'OBS', 'VALOR', 'SALDO'] 
+    
     
     rdEntrada = sg.Radio('ENTRADA', group_id=1, key='-TIPO_ENT-', enable_events=True)
     rdSaida = sg.Radio('SAIDA', group_id=1, key='-TIPO_SAI-', enable_events=True)
@@ -41,9 +40,9 @@ def tela_adicionar_movimentacao():
     frame_layout = [
         [sg.Text('Tipo:', size=(8 ,1), justification='r'), rdEntrada, rdSaida],
         [sg.Text('Categoria:', size=(8 ,1), justification='r'), cbTipo, btnNovaCat],
+        [sg.Text('Data:', size=(8 ,1), justification='r'), inpHoje, btnData],
         [sg.Text('Valor:', size=(8 ,1), justification='r'), inpValor],
-        [sg.Text('OBS:', size=(8 ,1), justification='r'), inpOBS],
-        [sg.Text('Data:', size=(8 ,1), justification='r'), inpHoje, btnData]
+        [sg.Text('OBS:', size=(8 ,1), justification='r'), inpOBS]
     ]
 
     # COLUNA LAYOUT
@@ -55,9 +54,11 @@ def tela_adicionar_movimentacao():
     ]
 
     # TELA LAYOUT
+    movimentacoes = pegar_movimentacoes()
+    headings = ['ID', 'DATA', 'TIPO', 'CATEGORIA', 'OBS', 'VALOR', 'SALDO ATUAL'] 
     tabMovimentacoes = sg.Table(values=movimentacoes, headings=headings, justification='c',
                                 def_col_width=20, expand_x=True, key='-TAB_MOV-',
-                                col_widths=[5, 10, 8, 12, 15, 6, 5], auto_size_columns=False,
+                                col_widths=[5, 10, 8, 12, 15, 6, 8], auto_size_columns=False,
                                 num_rows=15, alternating_row_color='#99dbf9',
                                 enable_click_events=True)
     
@@ -94,27 +95,19 @@ def tela_adicionar_movimentacao():
                                 key='-TXT_CX_INICIAL-', 
                                 visible=True)
 
+    font = ('Microsoft PhagsPa bold', 12)  
+    col1 = [[sg.Text('ENTRADAS', background_color='#0f1518', text_color='#ccedfc', font=font)], [sg.Text('R$', background_color='#0f1518', font=font, text_color='#ccedfc')]]
+    col2 = [[sg.Text('SAÍDAS', background_color='#0f1518', font=font, text_color='#ccedfc')], [ sg.Text('R$', background_color='#0f1518', text_color='#ccedfc', font=font)]]
+    col3 = [[sg.Text('SALDO ATUAL', background_color='#0f1518', font=font, text_color='#ccedfc')], [sg.Text('R$', background_color='#0f1518', text_color='#ccedfc', font=font)]]
+    frame_layout_resumo = [[sg.Column(col1, element_justification='c', background_color='#4c6d7c'),
+                            sg.Column(col2, element_justification='c', background_color='#4c6d7c'),
+                            sg.Column(col3, element_justification='c', background_color='#4c6d7c')]]
+
     layout = [
-        [sg.Text('Caixa Inical:'), inp_cx_inicial, btnSalvarCXInicial, txt_cx_incial], 
+        [sg.Text('Caixa Inical:'), inp_cx_inicial, btnSalvarCXInicial, txt_cx_incial, 
+         sg.Frame('', frame_layout_resumo, background_color='#4c6d7c')],
         [tabMovimentacoes],
         [ sg.Frame('Adicionar Movimentações', frame_layout), sg.Column(column_layout, element_justification='l')],
     ]
 
-    return sg.Window("Movimentações", layout=layout, finalize=True, size=(700, 500))
-
-def main() -> None:
-    # CRIANDO A JANELA
-    janela = tela_adicionar_movimentacao()
-
-    # Event Loop to process "events" and get the "values" of the inputs
-    while True:
-
-        eventos, valores = janela.read()
-
-        if (eventos == sg.WINDOW_CLOSED):
-            break
-
-    janela.close()
-
-if  __name__ == "__main__":
-    main()
+    return sg.Window("Movimentações", layout=layout, finalize=True, size=(800, 500))

@@ -175,7 +175,7 @@ def __cria_movimentacao_e_armazena(new_movimentacao_info: Dict) -> None:
     cat = new_movimentacao_info['categoria']
 
     data = dt.strptime(new_movimentacao_info['data'], "%d-%m-%Y")
-    data = dt.strftime(data, "%d-%m-%Y")
+    data = dt.strftime(data, "%Y-%m-%d")
     tipo = new_movimentacao_info['tipo']
     categoria = [c[0] for c in cats['tuplas'] if c[1] == cat]
     categoria = categoria[0]

@@ -1,5 +1,6 @@
 from time import sleep
 from pprint import pprint
+from datetime import datetime as dt
 import PySimpleGUI as sg
 from src.views import movimentacao_register_view as MovView
 from src.views import categoria_register_view as CatView
@@ -30,11 +31,14 @@ def start() -> None:
             else:
                 window['-TXT_CX_INICIAL-'].update(visible=True)
                 MovView.atualizar_cx_inicial(window)
+                sleep(.5)
+                MovView.atualizar_table_mov(window)
 
         
         elif window == jan_adicionar_movimentacao and event in ('-TIPO_ENT-', '-TIPO_SAI-'):
             MovView.atualizar_combo(values, window)
 
+        # === ADICIONAR MOVIMENTAÇÃO ===
         elif window == jan_adicionar_movimentacao and event == '-ADC_MOVIMENTACAO_BTN-':
             # aplicar o controller
             tipo = None
@@ -59,8 +63,10 @@ def start() -> None:
             if response['success']:
                 sg.popup("""Movimentação adicionada com sucesso.""", title='Sucesso')
                 # atualizar tabela
-                sleep(1)
+                sleep(.5)
+                hoje = dt.strftime(dt.today(), "%d-%m-%Y")
                 MovView.atualizar_table_mov(window)
+                window['-DATA_INPUT-'].update(hoje)
             else:
                 sg.popup_error(f"Erro: {response['error']['erro']}", title='Erro de preenchimento')
 
@@ -74,6 +80,7 @@ def start() -> None:
         elif '+CLICKED+' in event:
             linha = event[2][0]
             
+        # === ADICIONAR MOVIMENTAÇÃO ===   
         elif window == jan_adicionar_movimentacao and event == '-DEL_MOVIMENTACAO_BTN-':
             if linha == None:
                 sg.popup("Nenhum registro selecionado", title='')
@@ -190,5 +197,3 @@ def start() -> None:
 
 if __name__ == '__main__':
     start()
-    # cxInicial = MovController.pegar_caixa_inicial()
-    # print(type(cxInicial))
