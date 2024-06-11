@@ -99,6 +99,62 @@ def pegar_caixa_inicial():
 
     return res
 
+def pegar_resumo_geral() -> Dict:
+    """
+    # Função que pega o resumo geral
+    ...
+
+    Parametros
+    ----------
+    :return: 
+        Um dicionário com tres valores Scalar:
+
+        {
+        'soma_saida': soma_saidas,
+        'soma_entrada': soma_entrada,
+        'saldo_atual': saldo_atual
+    }
+    """
+
+    conn = conectar_database()
+    cur = conn.cursor()
+
+    # SAÍDAS
+    q_saidas ="""
+    SELECT SUM(VALOR_num) as SOMA_SAIDAS
+    FROM TAB_MOVIMENTACOES
+    WHERE ID_TIPO_num = 1
+    """
+    cur.execute(q_saidas)
+    soma_saidas = cur.fetchone()
+
+    # ENTRADAS
+    q_entrada ="""
+    SELECT SUM(VALOR_num) as SOMA_ENTRADAS
+    FROM TAB_MOVIMENTACOES
+    WHERE ID_TIPO_num = 2
+    """
+    cur.execute(q_entrada)
+    soma_entrada = cur.fetchone()
+
+    # SALDO MAIS RECENTE
+    q_saldo_atual ="""
+    SELECT SALDO_ATUAL FROM view_movimentacoes
+    ORDER BY date(DATA) DESC, ID DESC LIMIT 1
+    """
+    cur.execute(q_saldo_atual)
+    saldo_atual = cur.fetchone()
+
+    conn.close()
+
+    res = {
+        'soma_saida': soma_saidas,
+        'soma_entrada': soma_entrada,
+        'saldo_atual': saldo_atual
+    }
+
+    return res
+
 def salvar_caixa_inicial(valor) -> Dict:
     try:
         validacao = __valida_caixa_inicial(valor)

@@ -33,6 +33,7 @@ def start() -> None:
                 MovView.atualizar_cx_inicial(window)
                 sleep(.5)
                 MovView.atualizar_table_mov(window)
+                MovView.atualizar_resumo_geral(window)
 
         
         elif window == jan_adicionar_movimentacao and event in ('-TIPO_ENT-', '-TIPO_SAI-'):
@@ -66,6 +67,7 @@ def start() -> None:
                 sleep(.5)
                 hoje = dt.strftime(dt.today(), "%d-%m-%Y")
                 MovView.atualizar_table_mov(window)
+                MovView.atualizar_resumo_geral(window)
                 window['-DATA_INPUT-'].update(hoje)
             else:
                 sg.popup_error(f"Erro: {response['error']['erro']}", title='Erro de preenchimento')
@@ -75,11 +77,7 @@ def start() -> None:
             if data != None:
                 mes, dia, ano = data
                 window['-DATA_INPUT-'].update(f"{dia:0>2d}-{mes:0>2d}-{ano}")
-        
-        # salva a linha do registro a ser excluido
-        elif '+CLICKED+' in event:
-            linha = event[2][0]
-            
+                    
         # === ADICIONAR MOVIMENTAÇÃO ===   
         elif window == jan_adicionar_movimentacao and event == '-DEL_MOVIMENTACAO_BTN-':
             if linha == None:
@@ -95,6 +93,7 @@ def start() -> None:
                     # atualizar tabela
                     sleep(1)
                     MovView.atualizar_table_mov(window)
+                    MovView.atualizar_resumo_geral(window)
 
         # ========================= JANELA CATEGORIA =========================
         # abre a janela de categoria
@@ -139,7 +138,10 @@ def start() -> None:
             if linha == None:
                 sg.popup("Nenhum registro selecionado", title='')
             else:
-                if sg.popup_ok_cancel('Esta ação não pode ser desfeita, continuar?', title='Alerta') == 'OK':
+                msg = """Excluir esta categoria apagará as movimentações atribuidas a ela.
+                Esta ação não pode ser desfeita, continuar?
+                """
+                if sg.popup_ok_cancel(msg, title='Alerta') == 'OK':
                     # aplicar o controlador
                     categorias = CatController.pegar_categorias()
                     delCat = categorias['tuplas'][linha][1]
@@ -153,7 +155,7 @@ def start() -> None:
         # edita o registro
         elif window == jan_adicionar_categoria and event == '-SALVAR_BTN-':
             categorias = CatController.pegar_categorias()
-            catAtual = categorias['tuplas'][linha][0]
+            catAtual = categorias['tuplas'][linha][1]
 
             novoTipo = None
             if values['-TIPO_SAI-'] == True: novoTipo = 1
@@ -170,12 +172,13 @@ def start() -> None:
             #aplicar controller
             response = CatController.editar_categoria(categoria_updt_info)
             if response['success']:
-                message = f"""Categoria {catAtual} aterada para > *{response['message']['atributos']['updtCategoria']}* com sucesso.
+                message = f"""Categoria {categoria_updt_info['categoriaAtual']} aterada para > *{response['message']['atributos']['updtCategoria']}* com sucesso.
                 """
                 sg.popup(message, title='Sucesso')
                  # atualizar tabela
                 sleep(1)
                 CatView.atualizar_table(window)
+                MovView.atualizar_table_mov(jan_adicionar_movimentacao)
             else:
                 sg.popup_error(f"Erro: {response['error']['erro']}", title='Erro de preenchimento')
             
@@ -197,3 +200,5 @@ def start() -> None:
 
 if __name__ == '__main__':
     start()
+    # resumo = MovController.pegar_resumo_geral()
+    # pprint(resumo)

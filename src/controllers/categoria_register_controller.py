@@ -179,7 +179,7 @@ def __criar_categoria_e_atualizar(categoria_updt_info: Dict) -> None:
         conn = conectar_database()
         cur = conn.cursor()
         query = f"""UPDATE TAB_CATEGORIA
-        SET CATEGORIA_txt = '{novaCat.CATEGORIA_txt}', ID_TIPO_num = '{novaCat.ID_TIPO_num}'
+        SET CATEGORIA_txt = '{novaCat.CATEGORIA_txt}', ID_TIPO_num = {novaCat.ID_TIPO_num}
         WHERE CATEGORIA_txt = '{catAtual}';
         """
         cur.execute(query)

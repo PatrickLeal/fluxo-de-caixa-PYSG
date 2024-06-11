@@ -1,7 +1,7 @@
 from PySimpleGUI import PySimpleGUI as sg
 from datetime import datetime as dt
 from src.controllers.categoria_register_controller import pegar_categorias
-from src.controllers.movimentacao_register_controller import pegar_movimentacoes, pegar_caixa_inicial
+from src.controllers.movimentacao_register_controller import pegar_movimentacoes, pegar_caixa_inicial, pegar_resumo_geral
 
 # Layout
 sg.theme('Reddit')
@@ -16,6 +16,24 @@ def atualizar_combo(values, window):
 def atualizar_table_mov(window):
     movimentacoes = pegar_movimentacoes()
     window['-TAB_MOV-'].update(values=movimentacoes)
+
+def atualizar_resumo_geral(window):
+    resumo_geral = pegar_resumo_geral()
+    if resumo_geral['soma_saida'][0] == None:
+        soma_saida = "R$"
+    else:
+        soma_saida = f"R$ {resumo_geral['soma_saida'][0]:.2f}"
+
+    if resumo_geral['soma_entrada'][0] == None:
+        soma_entrada = 'R$'
+    else:
+        soma_entrada = f"R$ {resumo_geral['soma_entrada'][0]:.2f}"
+
+    saldo_atual = resumo_geral['saldo_atual'][0]
+
+    window['-TXT_SUM_SAIDA-'].update(soma_saida)
+    window['-TXT_SUM_ENTRADA-'].update(soma_entrada)
+    window['-TXT_SALDO_ATUAL-'].update(saldo_atual)
 
 def atualizar_cx_inicial(window):
     caixa_inicial = pegar_caixa_inicial()
@@ -95,13 +113,35 @@ def tela_adicionar_movimentacao():
                                 key='-TXT_CX_INICIAL-', 
                                 visible=True)
 
-    font = ('Microsoft PhagsPa bold', 12)  
-    col1 = [[sg.Text('ENTRADAS', background_color='#0f1518', text_color='#ccedfc', font=font)], [sg.Text('R$', background_color='#0f1518', font=font, text_color='#ccedfc')]]
-    col2 = [[sg.Text('SAÍDAS', background_color='#0f1518', font=font, text_color='#ccedfc')], [ sg.Text('R$', background_color='#0f1518', text_color='#ccedfc', font=font)]]
-    col3 = [[sg.Text('SALDO ATUAL', background_color='#0f1518', font=font, text_color='#ccedfc')], [sg.Text('R$', background_color='#0f1518', text_color='#ccedfc', font=font)]]
-    frame_layout_resumo = [[sg.Column(col1, element_justification='c', background_color='#4c6d7c'),
-                            sg.Column(col2, element_justification='c', background_color='#4c6d7c'),
-                            sg.Column(col3, element_justification='c', background_color='#4c6d7c')]]
+    
+    resumo_geral = pegar_resumo_geral()
+
+    # RESUMO GERAL
+    if (resumo_geral['soma_saida'][0] == None) or (resumo_geral['soma_entrada'][0] == None):
+        font = ('Microsoft PhagsPa bold', 12)  
+        col1 = [[sg.Text('ENTRADAS', background_color='#0f1518', text_color='#ccedfc', font=font, size=(9, ), justification='c')],
+                [sg.Text('R$', key='-TXT_SUM_ENTRADA-', size=(11, ), background_color='#0f1518', font=font, text_color='#ccedfc', justification='c')]]
+        col2 = [[sg.Text('SAÍDAS', background_color='#0f1518', font=font, text_color='#ccedfc', size=(9, ), justification='c')],
+                [ sg.Text('R$', key='-TXT_SUM_SAIDA-', size=(11, ), background_color='#0f1518', text_color='#ccedfc', font=font, justification='c')]]
+        col3 = [[sg.Text('SALDO ATUAL', background_color='#0f1518', font=font, text_color='#ccedfc',)],
+                [sg.Text('R$', key='-TXT_SALDO_ATUAL-', background_color='#0f1518', size=(11, ), text_color='#ccedfc', font=font, justification='c')]]
+        frame_layout_resumo = [[sg.Column(col1, element_justification='c', background_color='#4c6d7c'),
+                                sg.Column(col2, element_justification='c', background_color='#4c6d7c'),
+                                sg.Column(col3, element_justification='c', background_color='#4c6d7c')]]
+    else:
+        soma_saida = f"R$ {resumo_geral['soma_saida'][0]:.2f}"
+        soma_entrada = f"R$ {resumo_geral['soma_entrada'][0]:.2f}"
+        saldo_atual = resumo_geral['saldo_atual'][0]
+        font = ('Microsoft PhagsPa bold', 12)  
+        col1 = [[sg.Text('ENTRADAS', background_color='#0f1518', text_color='#ccedfc', font=font, size=(9, ), justification='c')],
+                [sg.Text(soma_entrada, key='-TXT_SUM_ENTRADA-', size=(11, ), background_color='#0f1518', font=font, text_color='#ccedfc', justification='c')]]
+        col2 = [[sg.Text('SAÍDAS', background_color='#0f1518', font=font, text_color='#ccedfc', size=(9, ), justification='c')],
+                [ sg.Text(soma_saida, key='-TXT_SUM_SAIDA-', size=(11, ), background_color='#0f1518', text_color='#ccedfc', font=font, justification='c')]]
+        col3 = [[sg.Text('SALDO ATUAL', background_color='#0f1518', font=font, text_color='#ccedfc',)],
+                [sg.Text(saldo_atual, key='-TXT_SALDO_ATUAL-', background_color='#0f1518', size=(11, ), text_color='#ccedfc', font=font, justification='c')]]
+        frame_layout_resumo = [[sg.Column(col1, element_justification='c', background_color='#4c6d7c'),
+                                sg.Column(col2, element_justification='c', background_color='#4c6d7c'),
+                                sg.Column(col3, element_justification='c', background_color='#4c6d7c')]]
 
     layout = [
         [sg.Text('Caixa Inical:'), inp_cx_inicial, btnSalvarCXInicial, txt_cx_incial, 
@@ -110,4 +150,4 @@ def tela_adicionar_movimentacao():
         [ sg.Frame('Adicionar Movimentações', frame_layout), sg.Column(column_layout, element_justification='l')],
     ]
 
-    return sg.Window("Movimentações", layout=layout, finalize=True, size=(800, 500))
+    return sg.Window("Movimentações", layout=layout, finalize=True, size=(800, 550))
