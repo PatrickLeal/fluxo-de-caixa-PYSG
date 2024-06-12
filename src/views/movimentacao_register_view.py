@@ -84,8 +84,6 @@ def tela_adicionar_movimentacao():
                                 enable_click_events=True)
     
     cx_inicial = pegar_caixa_inicial()
-    inp_cx_inicial = None
-    txt_cx_incial = None
     btnSalvarCXInicial = sg.Button("Salvar", key='-BTN_CAIXA_INICIAL-')
     
     # CAIXA INICIAL
@@ -94,7 +92,7 @@ def tela_adicionar_movimentacao():
                                   do_not_clear=False,
                                   tooltip=" Insira um valor... ",
                                   key='-INP_CAIXA_INICIAL-')
-        txt_cx_incial = sg.Text("R$", key='-TXT_CX_INICIAL-', visible=False,
+        txt_cx_incial = sg.Text("R$", key='-TXT_CX_INICIAL-',
                                 size=(12, ),
                                 font=('Arial bold', 16),
                                 justification='center',

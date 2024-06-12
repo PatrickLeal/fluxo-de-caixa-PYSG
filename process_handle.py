@@ -28,7 +28,6 @@ def start() -> None:
             if response['success'] == False:
                 sg.popup_error(response['error']['erro'], title='')
             else:
-                window['-TXT_CX_INICIAL-'].update(visible=True)
                 MovView.atualizar_cx_inicial(window)
                 sleep(.5)
                 MovView.atualizar_table_mov(window)
