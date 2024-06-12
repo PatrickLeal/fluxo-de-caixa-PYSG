@@ -29,7 +29,10 @@ def atualizar_resumo_geral(window):
     else:
         soma_entrada = f"R$ {resumo_geral['soma_entrada'][0]:.2f}"
 
-    saldo_atual = resumo_geral['saldo_atual'][0]
+    if resumo_geral['saldo_atual'] == None:
+        saldo_atual = 'R$'
+    else:
+        saldo_atual = resumo_geral['saldo_atual'][0]
 
     window['-TXT_SUM_SAIDA-'].update(soma_saida)
     window['-TXT_SUM_ENTRADA-'].update(soma_entrada)
@@ -91,7 +94,7 @@ def tela_adicionar_movimentacao():
                                   do_not_clear=False,
                                   tooltip=" Insira um valor... ",
                                   key='-INP_CAIXA_INICIAL-')
-        txt_cx_incial = sg.Text(key='-TXT_CX_INICIAL-', visible=False,
+        txt_cx_incial = sg.Text("R$", key='-TXT_CX_INICIAL-', visible=False,
                                 size=(12, ),
                                 font=('Arial bold', 16),
                                 justification='center',

@@ -13,10 +13,15 @@ def conectar_database():
 
     conexao = None
     try:
-        conexao = sqlite3.connect(nomeBanco)
-        cursor = conexao.cursor()
 
-        if not db_exists:
+        if db_exists == True:
+            conexao = sqlite3.connect(nomeBanco)
+
+        else:
+            print('Banco não existe')
+            conexao = sqlite3.connect(nomeBanco)
+            cursor = conexao.cursor()
+
             # Criar tabela TAB_MOVIMENTACOES
             cursor.execute('''
             CREATE TABLE TAB_MOVIMENTACOES (
@@ -105,7 +110,14 @@ def conectar_database():
             """)
 
             conexao.commit()
+    
     except Error as err:
         print(err)
 
     return conexao
+
+if __name__ == '__main__':
+    # conn = conectar_database()
+    # print(conn)
+    print(f"\nBanco existe: {db_exists}\n")
+    # print(os.stat(nomeBanco))

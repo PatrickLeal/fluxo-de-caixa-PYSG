@@ -1,5 +1,4 @@
 from time import sleep
-from pprint import pprint
 from datetime import datetime as dt
 import PySimpleGUI as sg
 from src.views import movimentacao_register_view as MovView
@@ -200,5 +199,3 @@ def start() -> None:
 
 if __name__ == '__main__':
     start()
-    # resumo = MovController.pegar_resumo_geral()
-    # pprint(resumo)
